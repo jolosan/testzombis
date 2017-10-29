@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>Juego de Zombis</title>
+    <style>
+    #mapa_zombi {
+      width: 600px;
+      height: 400px;
+      background-color: grey;
+    }
+    </style>
+  </head>
+  <body>
+    Mi mapa zombi
+    <div id="mapa_zombi">
+	</div>
+    <form>
+		<select id="icono_a_usar">
+  			<option value="./iconos/zombi.png">Zombi</option>
+  			<option value="./iconos/hospital.png">Hospital</option>
+			<option value="./iconos/armas.png">Armas</option>
+		</select>
+	  </form>
+
+    <script>
+      var mapa_zombi;
+      var todos_los_marcadores = [];
+      var puntuacion = 0;
+      var tolerancia = 10;
+      var posicion_antigua;    
+      function inicializaMapa() {
+
+        mapa_zombi = new google.maps.Map(document.getElementById('mapa_zombi'), {
+        zoom: 17,
+        //center: {lat:39.986897, lng:-0.0269124}
+        center: {lat:39.99455982401604, lng:-0.0350189208984375}
+        });
+	      
+	posicion_antigua = new google.maps.Marker({
+              position: {lat:39.99455982401604, lng:-0.0350189208984375},
+              map: mapa_zombi,
+	      icon: "./iconos/jugador.png"
+            });
+
+	crea_objetos();
+
+	mapa_zombi.addListener('click', function(e) {
+			var ubicacion = e.latLng;
+  			ponMarcador(ubicacion);
+            //console.log("Ubicacion: "+e.latLng);
+			});
+      
+	if(navigator.geolocation) {
+		    navigator.geolocation.watchPosition(actualiza_mi_posicion);
+		}
+	else {
+    		alert("La geolocalización no funciona en tu navegador");
+		}
+	}
+
+	function actualiza_mi_posicion(){
+	 posicion_antigua.setMap(null);
+         var pos = new google.maps.LatLng(39.994858804764455 -0.03519997000694275);
+         var marcador = new google.maps.Marker({
+              position: pos,
+              map: mapa_zombi,
+			  icon: "./iconos/jugador.png"
+            });
+          
+	   posicion_antigua = marcador;
+		
+	   for (var i=0; i < todos_los_marcadores.length; i++) {
+	    var distancia = google.maps.geometry.spherical.computeDistanceBetween(pos, todos_los_marcadores[i].getPosition());
+            
+
+            if( distancia < tolerancia ){
+		var que_es = todos_los_marcadores[i].getIcon();
+                que_es = que_es.replace(".png", "");
+    		alert("Encontrado el " + que_es);
+		todos_los_marcadores[i].setMap(null);
+		if (que_es != "zombi") {
+		    puntuacion += 10;
+		    alert("Tu puntuación es " + puntuacion);
+		    }
+		}
+	   }
+	  }
+	  
+	  function ponMarcador(ubicacion){
+		var emoji = document.getElementById('icono_a_usar').value;
+ 		var marcador = new google.maps.Marker({
+              position: ubicacion,
+              map: mapa_zombi,
+              icon: emoji
+            });
+	    todos_los_marcadores.push(marcador);
+		console.log(ubicacion.lat()+" "+ubicacion.lng()+" "+emoji);
+	  }
+      
+	  function crea_objetos(){
+		// crea zombis	
+		var marcador, coordenadas, nueva_ubicacion;	
+		var ubicaciones_zombis = [
+								{lat:39.995484502507296, lng:-0.03526031970977783}, 
+								{lat:39.995472173543114 , lng:-0.03444492816925049}
+								];
+
+		for (coordenadas in ubicaciones_zombis) {
+			marcador = new google.maps.Marker({
+			position: ubicaciones_zombis[coordenadas],
+			map: mapa_zombi,
+			icon: "./iconos/zombi.png"
+            });
+		todos_los_marcadores.push(marcador);
+		}
+
+		// crea armas
+		var ubicaciones_armas = [
+								{lat:39.99440570971696, lng:-0.03345519304275513}
+								];
+	
+		for (coordenadas in ubicaciones_armas) {
+			marcador = new google.maps.Marker({
+			position: ubicaciones_armas[coordenadas],
+			map: mapa_zombi,
+			icon: "./iconos/armas.png"
+            });
+		todos_los_marcadores.push(marcador);
+		}
+
+		// crea hospitales
+		var ubicaciones_hospitales = [
+								{lat:39.994555714305896, lng:-0.0350189208984375}, 
+								{lat:39.994463245762624, lng:-0.034367144107818604}					
+								];
+	
+		for (coordenadas in ubicaciones_hospitales) {
+			marcador = new google.maps.Marker({
+			position: ubicaciones_hospitales[coordenadas],
+			map: mapa_zombi,
+			icon: "./iconos/hospital.png"
+            });
+		todos_los_marcadores.push(marcador);
+		}
+
+	  }
+      </script>
+
+    <script async defer
+       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAgWJXIRqEsSaK1PutJz5T3qlibs49Cfwc&callback=inicializaMapa&libraries=geometry">
+    </script>
+  </body>
+</html>
